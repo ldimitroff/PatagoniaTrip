@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patagonia Trip Forecast</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --bg: #0d1b2a;
+      --card: #1a2e42;
+      --card-hover: #1f3650;
+      --accent: #4fc3f7;
+      --accent2: #81d4fa;
+      --text: #e8f4fd;
+      --muted: #7ba7c2;
+      --border: #2a4460;
+      --rain: #4dd0e1;
+      --snow: #b3e5fc;
+      --sun: #ffd54f;
+      --cloud: #90a4ae;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(79, 195, 247, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 90%, rgba(30, 80, 120, 0.15) 0%, transparent 50%);
+    }
+
+    header {
+      text-align: center;
+      padding: 2.5rem 1rem 1.5rem;
+    }
+
+    header .trip-label {
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    header h1 span {
+      color: var(--accent);
+    }
+
+    header .subtitle {
+      color: var(--muted);
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #last-updated {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    button#refresh {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 0.5rem 1.4rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button#refresh:hover { background: var(--accent2); }
+    button#refresh:active { transform: scale(0.97); }
+
+    button#refresh .icon {
+      display: inline-block;
+      transition: transform 0.5s ease;
+    }
+
+    button#refresh.loading .icon {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .locations-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      padding: 1rem 2rem 3rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .locations-grid {
+        grid-template-columns: 1fr;
+        max-width: 520px;
+      }
+    }
+
+    .location-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .location-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .location-header {
+      padding: 1.2rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .location-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .location-dates {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .location-flag {
+      font-size: 1.5rem;
+    }
+
+    .days-container {
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .day-row {
+      background: rgba(255,255,255,0.03);
+      border-radius: 0.6rem;
+      padding: 0.75rem 1rem;
+      display: grid;
+      grid-template-columns: 90px 2.5rem 1fr auto auto;
+      align-items: center;
+      gap: 0.75rem;
+      transition: background 0.15s;
+    }
+
+    .day-row:hover { background: rgba(255,255,255,0.06); }
+
+    .day-label {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .day-label strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .weather-icon {
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .weather-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .temp-range {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .temp-max {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--sun);
+    }
+
+    .temp-min {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .precip {
+      text-align: right;
+      font-size: 0.78rem;
+      color: var(--rain);
+      white-space: nowrap;
+    }
+
+    .precip.none { color: var(--muted); }
+
+    /* Loading & error states */
+    .day-row.loading {
+      opacity: 0.5;
+    }
+
+    .skeleton {
+      height: 0.8rem;
+      background: linear-gradient(90deg, var(--border) 25%, var(--card-hover) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 0.3rem;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .error-banner {
+      background: rgba(229, 57, 53, 0.15);
+      border: 1px solid rgba(229, 57, 53, 0.4);
+      color: #ef9a9a;
+      padding: 0.6rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.82rem;
+      margin: 0 0.75rem 0.75rem;
+      display: none;
+    }
+
+    .error-banner.visible { display: block; }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Map ──────────────────────────────────────────── */
+    .section-title {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+    }
+
+    .section-title h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section-title p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+
+    #map-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 2rem 1.5rem;
+    }
+
+    #map {
+      width: 100%;
+      height: 420px;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    /* ── Itinerary ───────────────────────────────────── */
+    .itinerary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      padding: 0 2rem 3rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .itinerary-grid {
+        grid-template-columns: 1fr;
+        max-width: 520px;
+      }
+    }
+
+    .itin-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+
+    .itin-header {
+      padding: 1rem 1.2rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .itin-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .itin-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .itin-days {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    .itin-body {
+      padding: 0.75rem 1.2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .itin-day-block {
+      margin-bottom: 0.25rem;
+    }
+
+    .itin-day-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+
+    .itin-activity {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      padding: 0.25rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .itin-activity:last-child { border-bottom: none; }
+
+    .itin-activity .act-icon { flex-shrink: 0; font-size: 0.9rem; }
+
+    .itin-activity .act-text { line-height: 1.4; color: var(--text); }
+    .itin-activity .act-text small { color: var(--muted); display: block; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="trip-label">🧭 Trip Forecast</div>
+  <h1>Patagonia <span>April 2026</span></h1>
+  <p class="subtitle">Argentina · Bariloche → San Martín de los Andes</p>
+</header>
+
+<div class="controls">
+  <span id="last-updated">Not yet loaded</span>
+  <button id="refresh">
+    <span class="icon">⟳</span> Refresh Forecast
+  </button>
+</div>
+
+<div class="locations-grid" id="grid"></div>
+
+<!-- Map -->
+<div class="section-title">
+  <h2>🗺️ Route Map</h2>
+  <p>Bariloche → Villa La Angostura → Villa Traful → San Martín de los Andes</p>
+</div>
+<div id="map-container">
+  <div id="map"></div>
+</div>
+
+<!-- Suggested Itinerary -->
+<div class="section-title">
+  <h2>📋 Suggested Itinerary</h2>
+  <p>Curated activities for each stop on your trip</p>
+</div>
+<div class="itinerary-grid" id="itinerary-grid"></div>
+
+<footer>
+  Weather data by <a href="https://open-meteo.com/" target="_blank">Open-Meteo</a> · Free & no API key required
+</footer>
+
+<script>
+  const ITINERARY = [
+    {
+      name: "Bariloche",
+      dates: ["2026-04-03", "2026-04-04"],
+      lat: -41.1335,
+      lon: -71.3103,
+    },
+    {
+      name: "Villa La Angostura",
+      dates: ["2026-04-05", "2026-04-06"],
+      lat: -40.7687,
+      lon: -71.6478,
+    },
+    {
+      name: "Villa Traful",
+      dates: ["2026-04-07", "2026-04-08"],
+      lat: -40.6617,
+      lon: -71.6717,
+    },
+    {
+      name: "San Martín de los Andes",
+      dates: ["2026-04-09", "2026-04-10"],
+      lat: -40.1572,
+      lon: -71.3536,
+    },
+  ];
+
+  const WMO = {
+    0:  { icon: "☀️",  desc: "Clear sky" },
+    1:  { icon: "🌤️", desc: "Mainly clear" },
+    2:  { icon: "⛅",  desc: "Partly cloudy" },
+    3:  { icon: "☁️",  desc: "Overcast" },
+    45: { icon: "🌫️", desc: "Fog" },
+    48: { icon: "🌫️", desc: "Icy fog" },
+    51: { icon: "🌦️", desc: "Light drizzle" },
+    53: { icon: "🌦️", desc: "Drizzle" },
+    55: { icon: "🌧️", desc: "Heavy drizzle" },
+    61: { icon: "🌧️", desc: "Light rain" },
+    63: { icon: "🌧️", desc: "Rain" },
+    65: { icon: "🌧️", desc: "Heavy rain" },
+    71: { icon: "🌨️", desc: "Light snow" },
+    73: { icon: "🌨️", desc: "Snow" },
+    75: { icon: "❄️",  desc: "Heavy snow" },
+    77: { icon: "🌨️", desc: "Snow grains" },
+    80: { icon: "🌦️", desc: "Light showers" },
+    81: { icon: "🌧️", desc: "Showers" },
+    82: { icon: "⛈️",  desc: "Heavy showers" },
+    85: { icon: "🌨️", desc: "Snow showers" },
+    86: { icon: "❄️",  desc: "Heavy snow showers" },
+    95: { icon: "⛈️",  desc: "Thunderstorm" },
+    96: { icon: "⛈️",  desc: "Thunderstorm + hail" },
+    99: { icon: "⛈️",  desc: "Thunderstorm + hail" },
+  };
+
+  function getWMO(code) {
+    return WMO[code] ?? { icon: "🌡️", desc: "Unknown" };
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + "T12:00:00");
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  }
+
+  function buildGrid() {
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+
+    ITINERARY.forEach((loc, i) => {
+      const startDate = loc.dates[0];
+      const endDate   = loc.dates[loc.dates.length - 1];
+
+      const card = document.createElement("div");
+      card.className = "location-card";
+      card.id = `card-${i}`;
+
+      const header = document.createElement("div");
+      header.className = "location-header";
+      header.innerHTML = `
+        <div>
+          <div class="location-name">${loc.name}</div>
+          <div class="location-dates">${formatDate(startDate)} – ${formatDate(endDate)}</div>
+        </div>
+        <span class="location-flag">🏔️</span>
+      `;
+
+      const daysContainer = document.createElement("div");
+      daysContainer.className = "days-container";
+      daysContainer.id = `days-${i}`;
+
+      loc.dates.forEach(date => {
+        const row = document.createElement("div");
+        row.className = "day-row loading";
+        row.id = `day-${i}-${date}`;
+        row.innerHTML = `
+          <div class="day-label"><strong>${formatDate(date)}</strong></div>
+          <div class="weather-icon">…</div>
+          <div class="weather-desc"><div class="skeleton" style="width:80%"></div></div>
+          <div class="temp-range"><div class="skeleton" style="width:40px"></div></div>
+          <div class="precip"><div class="skeleton" style="width:30px"></div></div>
+        `;
+        daysContainer.appendChild(row);
+      });
+
+      const errorBanner = document.createElement("div");
+      errorBanner.className = "error-banner";
+      errorBanner.id = `error-${i}`;
+      errorBanner.textContent = "⚠️ Could not load forecast. Check your connection and try refreshing.";
+
+      card.appendChild(header);
+      card.appendChild(daysContainer);
+      card.appendChild(errorBanner);
+      grid.appendChild(card);
+    });
+  }
+
+  function maxForecastDate() {
+    const d = new Date();
+    d.setDate(d.getDate() + 15);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function renderNotAvailable(row, date) {
+    row.className = "day-row";
+    row.innerHTML = `
+      <div class="day-label"><strong>${formatDate(date)}</strong></div>
+      <div class="weather-icon">🕐</div>
+      <div class="weather-desc" style="color:var(--muted)">Not yet available</div>
+      <div class="temp-range" style="color:var(--muted)">—</div>
+      <div class="precip none">—</div>
+    `;
+  }
+
+  async function fetchForecast(loc, index) {
+    const maxDate    = maxForecastDate();
+    const errorEl    = document.getElementById(`error-${index}`);
+    errorEl.classList.remove("visible");
+
+    // Split dates into fetchable vs. out-of-range
+    const fetchable = loc.dates.filter(d => d <= maxDate);
+    const tooFar    = loc.dates.filter(d => d > maxDate);
+
+    // Mark out-of-range days immediately
+    tooFar.forEach(date => {
+      const row = document.getElementById(`day-${index}-${date}`);
+      if (row) renderNotAvailable(row, date);
+    });
+
+    if (fetchable.length === 0) return;
+
+    const startDate = fetchable[0];
+    const endDate   = fetchable[fetchable.length - 1];
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}` +
+      `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode` +
+      `&timezone=America%2FArgentina%2FSalta` +
+      `&start_date=${startDate}&end_date=${endDate}`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      fetchable.forEach((date, di) => {
+        const row = document.getElementById(`day-${index}-${date}`);
+        if (!row) return;
+
+        const code   = data.daily.weathercode[di];
+        const tmax   = data.daily.temperature_2m_max[di];
+        const tmin   = data.daily.temperature_2m_min[di];
+        const precip = data.daily.precipitation_sum[di];
+        const wmo    = getWMO(code);
+
+        const precipStr = precip > 0
+          ? `💧 ${precip.toFixed(1)} mm`
+          : "No rain";
+
+        row.className = "day-row";
+        row.innerHTML = `
+          <div class="day-label"><strong>${formatDate(date)}</strong></div>
+          <div class="weather-icon">${wmo.icon}</div>
+          <div class="weather-desc">${wmo.desc}</div>
+          <div class="temp-range">
+            <span class="temp-max">${Math.round(tmax)}°C</span>
+            <span class="temp-min"> / ${Math.round(tmin)}°C</span>
+          </div>
+          <div class="precip${precip <= 0 ? " none" : ""}">${precipStr}</div>
+        `;
+      });
+
+    } catch (err) {
+      console.error(`Forecast error for ${loc.name}:`, err);
+      fetchable.forEach(date => {
+        const row = document.getElementById(`day-${index}-${date}`);
+        if (row) {
+          row.className = "day-row";
+          row.innerHTML = `
+            <div class="day-label"><strong>${formatDate(date)}</strong></div>
+            <div class="weather-icon">⚠️</div>
+            <div class="weather-desc" style="color:#ef9a9a">Failed to load</div>
+            <div class="temp-range">—</div>
+            <div class="precip none">—</div>
+          `;
+        }
+      });
+      errorEl.classList.add("visible");
+    }
+  }
+
+  async function loadAll() {
+    const btn = document.getElementById("refresh");
+    btn.classList.add("loading");
+    btn.disabled = true;
+
+    buildGrid();
+
+    await Promise.all(ITINERARY.map((loc, i) => fetchForecast(loc, i)));
+
+    const now = new Date();
+    document.getElementById("last-updated").textContent =
+      `Last updated: ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+
+    btn.classList.remove("loading");
+    btn.disabled = false;
+  }
+
+  document.getElementById("refresh").addEventListener("click", loadAll);
+  loadAll();
+
+  // ── Map ────────────────────────────────────────────────────────────────────
+
+  const MAP_COLORS = ["#4fc3f7", "#81c784", "#ffb74d", "#f06292"];
+
+  const STOP_COORDS = ITINERARY.map((loc, i) => ({
+    name: loc.name,
+    dates: loc.dates,
+    latlng: [loc.lat, loc.lon],
+    color: MAP_COLORS[i],
+  }));
+
+  function initMap() {
+    const map = L.map("map", { zoomControl: true, scrollWheelZoom: false });
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+      subdomains: "abcd",
+      maxZoom: 19,
+    }).addTo(map);
+
+    const latlngs = STOP_COORDS.map(s => s.latlng);
+
+    // Route polyline
+    L.polyline(latlngs, {
+      color: "#4fc3f7",
+      weight: 2.5,
+      opacity: 0.6,
+      dashArray: "6 8",
+    }).addTo(map);
+
+    // Markers
+    STOP_COORDS.forEach((stop, i) => {
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="
+          width:32px;height:32px;border-radius:50%;
+          background:${stop.color};
+          border:3px solid #0d1b2a;
+          display:flex;align-items:center;justify-content:center;
+          font-weight:700;font-size:13px;color:#0d1b2a;
+          box-shadow:0 2px 8px rgba(0,0,0,0.5);
+        ">${i + 1}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      const dateLabel = `${formatDate(stop.dates[0])} – ${formatDate(stop.dates[stop.dates.length - 1])}`;
+      L.marker(stop.latlng, { icon })
+        .addTo(map)
+        .bindPopup(`<strong style="color:#0d1b2a">${stop.name}</strong><br><span style="color:#555;font-size:12px">${dateLabel}</span>`, {
+          className: "map-popup",
+        });
+    });
+
+    map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] });
+  }
+
+  // ── Itinerary ──────────────────────────────────────────────────────────────
+
+  const ITINERARY_DATA = [
+    {
+      name: "Bariloche",
+      color: MAP_COLORS[0],
+      days: [
+        {
+          label: "Apr 3",
+          activities: [
+            { icon: "🚡", text: "Cerro Campanario", note: "Chairlift with panoramic views of Nahuel Huapi" },
+            { icon: "🛤️", text: "Circuito Chico", note: "Classic scenic drive around Península San Pedro" },
+            { icon: "🍫", text: "Centro Cívico", note: "Explore the famous chocolate shops & civic architecture" },
+          ],
+        },
+        {
+          label: "Apr 4",
+          activities: [
+            { icon: "⛵", text: "Lago Nahuel Huapi boat trip", note: "Cruise to Isla Victoria and Bosque de Arrayanes" },
+            { icon: "🏔️", text: "Cerro Catedral", note: "Hiking trails with stunning Andean scenery in autumn" },
+            { icon: "🍺", text: "Dinner in town", note: "Try local craft beer and wild boar dishes" },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Villa La Angostura",
+      color: MAP_COLORS[1],
+      days: [
+        {
+          label: "Apr 5",
+          activities: [
+            { icon: "🌳", text: "Parque Nacional Los Arrayanes", note: "Hike or cycle to the rare myrtle forest on Península Quetrihué" },
+            { icon: "🎣", text: "Lago Correntoso", note: "One of the world's shortest rivers — great for fly fishing" },
+          ],
+        },
+        {
+          label: "Apr 6",
+          activities: [
+            { icon: "🏄", text: "Puerto Manzano", note: "Kayaking and stand-up paddleboarding on calm lake waters" },
+            { icon: "🌅", text: "Mirador Belvedere", note: "Sunset viewpoint over Lago Nahuel Huapi and Lago Correntoso" },
+            { icon: "🛍️", text: "El Cruce village", note: "Browse artisan shops and local jam & honey stalls" },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Villa Traful",
+      color: MAP_COLORS[2],
+      days: [
+        {
+          label: "Apr 7",
+          activities: [
+            { icon: "🚣", text: "Lago Traful kayaking", note: "Crystal-clear turquoise water in a secluded valley" },
+            { icon: "🎣", text: "Fly fishing", note: "Some of Patagonia's best brown and rainbow trout fishing" },
+          ],
+        },
+        {
+          label: "Apr 8",
+          activities: [
+            { icon: "💧", text: "Cascada Coa Có", note: "Scenic waterfall hike through lengas and coihues forest" },
+            { icon: "🪨", text: "Caverna de Pinturas Rupestres", note: "Ancient rock art cave paintings above the lake" },
+            { icon: "🤿", text: "Submerged forest", note: "Unique diving/snorkeling spot — sunken trees under the lake" },
+          ],
+        },
+      ],
+    },
+    {
+      name: "San Martín de los Andes",
+      color: MAP_COLORS[3],
+      days: [
+        {
+          label: "Apr 9",
+          activities: [
+            { icon: "🛣️", text: "Ruta de los Siete Lagos", note: "Drive the legendary Seven Lakes Route through PN Nahuel Huapi" },
+            { icon: "🌋", text: "Views of Volcán Lanín", note: "Stop at Lago Lácar for iconic cone-shaped volcano panoramas" },
+          ],
+        },
+        {
+          label: "Apr 10",
+          activities: [
+            { icon: "⛵", text: "Lago Lácar boat trip", note: "Cruise to Quila Quina beach — remote Mapuche community" },
+            { icon: "🏘️", text: "Downtown San Martín", note: "Charming alpine village with great restaurants & artisan shops" },
+            { icon: "🧉", text: "Farewell asado", note: "Celebrate the trip with a traditional Patagonian barbecue" },
+          ],
+        },
+      ],
+    },
+  ];
+
+  function buildItinerary() {
+    const grid = document.getElementById("itinerary-grid");
+    grid.innerHTML = "";
+
+    ITINERARY_DATA.forEach(loc => {
+      const card = document.createElement("div");
+      card.className = "itin-card";
+
+      const datesLabel = `${loc.days[0].label} – ${loc.days[loc.days.length - 1].label}`;
+      card.innerHTML = `
+        <div class="itin-header">
+          <div class="itin-dot" style="background:${loc.color}"></div>
+          <div>
+            <div class="itin-title">${loc.name}</div>
+            <div class="itin-days">${datesLabel}</div>
+          </div>
+        </div>
+        <div class="itin-body">
+          ${loc.days.map(day => `
+            <div class="itin-day-block">
+              <div class="itin-day-label">${day.label}</div>
+              ${day.activities.map(act => `
+                <div class="itin-activity">
+                  <span class="act-icon">${act.icon}</span>
+                  <span class="act-text">${act.text}<small>${act.note}</small></span>
+                </div>
+              `).join("")}
+            </div>
+          `).join("")}
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  buildItinerary();
+  initMap();
+</script>
+</body>
+</html>
