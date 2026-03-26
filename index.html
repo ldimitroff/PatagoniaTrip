@@ -533,6 +533,197 @@
     .cat-actividad { background: rgba(79,195,247,0.18); color: #4fc3f7; }
     .cat-tip { background: rgba(206,147,216,0.18); color: #ce93d8; }
 
+    /* ── Video Script ────────────────────────────────── */
+
+    .vs-overview {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .vs-overview { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+      .vs-overview { grid-template-columns: 1fr; }
+    }
+
+    .vs-stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.9rem 1.1rem;
+    }
+
+    .vs-stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .vs-stat-value { font-size: 1rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+    .vs-stat-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .vs-music-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem 2rem;
+      align-items: flex-start;
+    }
+
+    .vs-music-title {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.4rem;
+    }
+
+    .vs-music-track {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 2rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .vs-music-track:hover { background: rgba(79,195,247,0.1); border-color: var(--accent); }
+    .vs-music-track .track-mood { font-size: 0.67rem; color: var(--muted); margin-left: 0.2rem; }
+
+    .vs-scenes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .vs-scenes { grid-template-columns: 1fr; }
+    }
+
+    .vs-scene {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+
+    .vs-scene-header {
+      padding: 0.9rem 1.2rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .vs-scene-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700;
+      color: #0d1b2a;
+      flex-shrink: 0;
+    }
+
+    .vs-scene-info { flex: 1; }
+    .vs-scene-name { font-size: 0.9rem; font-weight: 700; }
+    .vs-scene-meta { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .vs-scene-time {
+      font-size: 0.72rem;
+      color: var(--accent);
+      font-weight: 600;
+      background: rgba(79,195,247,0.1);
+      border: 1px solid rgba(79,195,247,0.25);
+      border-radius: 0.4rem;
+      padding: 0.15rem 0.5rem;
+      white-space: nowrap;
+    }
+
+    .vs-shots {
+      padding: 0.6rem 1rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .vs-shot {
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-start;
+      padding: 0.45rem 0.4rem;
+      border-radius: 0.5rem;
+      transition: background 0.12s;
+    }
+
+    .vs-shot:hover { background: rgba(255,255,255,0.04); }
+
+    .vs-shot-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 0.3rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 1px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-drone  { background: rgba(79,195,247,0.18); color: #4fc3f7; }
+    .badge-ground { background: rgba(129,212,122,0.18); color: #81c784; }
+    .badge-tl     { background: rgba(255,183,77,0.18);  color: #ffd54f; }
+    .badge-audio  { background: rgba(206,147,216,0.18); color: #ce93d8; }
+
+    .vs-shot-body { flex: 1; min-width: 0; }
+    .vs-shot-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .vs-shot-desc { font-size: 0.74rem; color: var(--muted); line-height: 1.4; margin-top: 0.1rem; }
+
+    .vs-style {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 700px) {
+      .vs-style { grid-template-columns: 1fr; }
+    }
+
+    .vs-style-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.9rem 1.1rem;
+    }
+
+    .vs-style-heading {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+
+    .vs-style-item {
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding: 0.2rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      line-height: 1.4;
+    }
+
+    .vs-style-item:last-child { border-bottom: none; }
+    .vs-style-item strong { color: var(--text); }
+
     /* ── Costs ───────────────────────────────────────── */
     .costs-grid {
       display: grid;
@@ -718,6 +909,13 @@
 </div>
 
 <div id="costs-total" style="padding: 0 2rem 2rem; max-width: 1600px; margin: 0 auto;"></div>
+
+<!-- Video Script -->
+<div class="section-title">
+  <h2>🎬 Video Script</h2>
+  <p>Shot list, drone moves, music & style guide para el video de Patagonia</p>
+</div>
+<div id="video-script-root" style="max-width:1600px;margin:0 auto;padding:0 2rem 3rem"></div>
 
 <footer>
   Weather data by <a href="https://open-meteo.com/" target="_blank">Open-Meteo</a> · Free & no API key required
@@ -1533,6 +1731,202 @@
   }
 
   loadCosts();
+
+  // ── Video Script ───────────────────────────────────────────────────────────
+
+  const VIDEO_SCRIPT = {
+    overview: {
+      format:   { label: "Formato", value: "Reels / TikTok + YouTube", sub: "90 seg corto · 4–5 min versión completa" },
+      style:    { label: "Estilo", value: "Cinematic Nature", sub: "Drone reveal · slow-mo · golden hour" },
+      pace:     { label: "Ritmo", value: "Lento → épico", sub: "Intro calmo, climax en 7 Lagos" },
+      ratio:    { label: "Aspect ratio", value: "9:16 + 16:9", sub: "4K si es posible, mínimo 2.7K" },
+    },
+    music: [
+      { title: "Golden Hour",       artist: "Bonobo",         mood: "intro calmo",     url: "https://open.spotify.com/track/2tznHmp70mWhiPNMd6dVkm" },
+      { title: "Holocene",          artist: "Bon Iver",       mood: "revelación/natura", url: "https://open.spotify.com/track/55SFaLZAMoFdPPKsm9YIOH" },
+      { title: "First Breath After Coma", artist: "65daysofstatic", mood: "épico/build-up", url: "https://open.spotify.com/track/0b1UqPkhYB1K3EuMiFKi8Y" },
+      { title: "re: Stacks",        artist: "Bon Iver",       mood: "atardecer/cierre",  url: "https://open.spotify.com/track/6qivmSB2IWmLXaJNIBWEKB" },
+      { title: "Midnight City",     artist: "M83",            mood: "energético/Reels",  url: "https://open.spotify.com/track/5UAjkZQhWJcrROj4Eg9HNP" },
+    ],
+    scenes: [
+      {
+        name: "Bariloche",
+        color: "#4fc3f7",
+        num: 1,
+        dates: "Abr 3 – 4",
+        timecode: "0:00 – 0:40",
+        shots: [
+          { type: "drone", name: "Opening reveal",            desc: "Arrancás bajo las nubes sobre el lago. Subís lentamente hasta revelar Bariloche con el Nahuel Huapi de fondo. Shot de película." },
+          { type: "drone", name: "Vuelo Av. Bustillo",        desc: "Tracking shot bajo sobre el agua siguiendo la costanera. Velocidad media, luz de mediodía o tarde." },
+          { type: "drone", name: "Órbita Cerro Campanario",   desc: "Órbita 360° alrededor de la cumbre a baja velocidad. Capturás los dos lagos simultáneamente. Momento WOW del video." },
+          { type: "drone", name: "Bird's eye Llao Llao",      desc: "Plano cenital sobre la Península Llao Llao. Ves el istmo entre Lago Moreno y Nahuel Huapi. Muy fotogénico." },
+          { type: "drone", name: "Atardecer Bahía López",     desc: "Vuelo bajo sobre el agua hacia la bahía con el sol de fondo. Silhouette del bosque. Shot de cierre de escena." },
+          { type: "ground", name: "Close-up chocolate",       desc: "Macro del chocolate derritiéndose o moldeándose en Mamuschka. Corte rápido, contrasta con los planos épicos." },
+          { type: "ground", name: "Caminata Circuito Chico",  desc: "POV caminando por la ruta. Pies + asfalto + bosque = transición de escena dinámica." },
+          { type: "tl",     name: "Time-lapse lago",          desc: "Nubes moviéndose sobre el lago desde el mirador. Acelerar x30. Sirve para transición hacia siguiente destino." },
+        ],
+      },
+      {
+        name: "Villa La Angostura",
+        color: "#81c784",
+        num: 2,
+        dates: "Abr 5 – 6",
+        timecode: "0:40 – 1:20",
+        shots: [
+          { type: "drone", name: "Río Correntoso desde arriba", desc: "Sobrevolás el río más corto del mundo (200 m). Arrancás sobre el lago y terminás donde desemboca. Dato visual único." },
+          { type: "drone", name: "Vuelo por el Bosque Arrayán", desc: "Shot a baja altura entre el follaje. Los troncos rojos son absolutamente cinematográficos. Volar muy despacio." },
+          { type: "drone", name: "Reveal VLA desde montaña",   desc: "Subís sobre la montaña y revelás el pueblo entre dos lagos. La hora dorada lo hace espectacular." },
+          { type: "drone", name: "Cascada Inacayal desde arriba", desc: "Top-down de la cascada de 50 m. La vegetación verde y el agua blanca hacen contraste perfecto." },
+          { type: "ground", name: "Troncos rojos arrayán",     desc: "Close-up de la textura de la corteza del arrayán colorado. Esto justifica visualmente por qué es único en el mundo." },
+          { type: "ground", name: "Trekking Santa Ana",        desc: "Plano a contraluz de la persona trekkeando entre árboles. Silueta + rayos de luz = shot poderoso." },
+          { type: "audio",  name: "Sonido ambiente río",       desc: "Grabar el audio del Río Correntoso en stereo. Sirve de transición sonora entre escenas." },
+        ],
+      },
+      {
+        name: "Villa Traful",
+        color: "#ffb74d",
+        num: 3,
+        dates: "Abr 7 – 8",
+        timecode: "1:20 – 2:10",
+        shots: [
+          { type: "drone", name: "Llegada épica al lago",      desc: "Vuelo sobre las montañas hacia el valle. El lago aparece de golpe cristalino entre los cerros. Guardar este reveal." },
+          { type: "drone", name: "Superficie del lago Traful", desc: "Volar muy bajo sobre el agua (30–50 cm). En calma absoluta el reflejo de las montañas es perfecto." },
+          { type: "drone", name: "Bosque Sumergido desde arriba", desc: "Nadar/barquear sobre el bosque y filmar desde arriba con ND filter. Se ven los troncos bajo el agua." },
+          { type: "drone", name: "Órbita Cascada Coa Có",      desc: "Órbita amplia alrededor de la cascada para mostrar el contexto de la selva valdiviana." },
+          { type: "ground", name: "Bajo el agua (bosque)",     desc: "Si tenés cámara waterproof/GoPro: toma subacuática de los troncos del bosque sumergido. Shot único e irrepetible." },
+          { type: "tl",    name: "Time-lapse cielo nocturno",  desc: "Traful tiene cero contaminación lumínica. Time-lapse de la Vía Láctea sobre el lago = shot más épico del video." },
+          { type: "ground", name: "Fuego + lago de noche",     desc: "Corto plano de fogata con el lago al fondo. Calidez vs frialdad de la noche patagónica. Fin de escena." },
+        ],
+      },
+      {
+        name: "San Martín de los Andes",
+        color: "#f06292",
+        num: 4,
+        dates: "Abr 9 – 11",
+        timecode: "2:10 – 3:30",
+        shots: [
+          { type: "drone", name: "Ruta 7 Lagos aérea",         desc: "Seguir la ruta con el drone mostrando lagos de distintos colores en secuencia. Cada lago = corte rítmico con la música." },
+          { type: "drone", name: "Tracking shot del auto",     desc: "Drone detrás/costado del auto en la ruta de montaña. Velocidad media. Sensación de journey." },
+          { type: "drone", name: "Quila Quina desde el agua",  desc: "Volar bajo sobre el Lago Lácar hacia la playa de Quila Quina. La gente y el bosque en la orilla." },
+          { type: "drone", name: "Shot final épico",           desc: "Shot de cierre: subís rápido (pedal to the metal) sobre los Andes hasta perder el horizonte. Última toma del video." },
+          { type: "drone", name: "Cascada Ñivico",             desc: "Drone acercándose a la cascada entre el bosque. Momento tranquilo antes del climax de la Ruta de los 7 Lagos." },
+          { type: "ground", name: "Kayak en Lago Lácar",       desc: "GoPro en el kayak + corte al drone desde arriba. Perspectiva doble del mismo momento." },
+          { type: "tl",    name: "Amanecer en el lago",        desc: "Time-lapse del amanecer sobre Lago Lácar desde la orilla. La niebla matinal es mágica en otoño." },
+          { type: "audio", name: "Viento patagónico",         desc: "Sonido del viento entre los árboles. Característico de la Patagonia. Fondo de las escenas de trekking." },
+        ],
+      },
+    ],
+    style: {
+      grade: [
+        { label: "Look general",    val: "Teal & Orange — contraste frío/cálido. Cielo azul profundo, skin tones cálidos." },
+        { label: "Negros",          val: "Levantados (lifted blacks). Nada aplastado. Look cinematográfico suave." },
+        { label: "Sombras",         val: "Frías (viraje teal). Sensación de profundidad y misterio patagónico." },
+        { label: "Luces altas",     val: "Cálidas (viraje naranja). Resalta el dorado del amanecer/atardecer." },
+        { label: "LUT sugerido",    val: "KOJI Cinematic o Moody Teal Pack (CapCut/Premiere disponibles gratis)." },
+      ],
+      transitions: [
+        { label: "Match cut",       val: "Cortar de sol → reflejo en el lago. Del cielo → agua. Visualmente potente." },
+        { label: "Wipe natural",    val: "El drone pasa por un árbol o roca para hacer la transición. Fluido y dinámico." },
+        { label: "Speed ramp",      val: "Slow-mo al 40% durante el momento WOW, vuelta a velocidad normal en el corte." },
+        { label: "Jump cut rítmico", val: "Sincronizar los cortes con los golpes de la música. Especialmente en la parte 7 Lagos." },
+        { label: "Fade to black",   val: "Al final, fade lento antes del logo/texto final. No abrupto." },
+      ],
+      gear: [
+        { label: "Drone",           val: "DJI Air 3 / Mini 4 Pro recomendado. ND filters obligatorios: ND16 para día, ND64 para agua." },
+        { label: "Golden hours",    val: "Salida del sol ~7:30 · Puesta ~19:00 en abril. Planificar los vuelos para esas horas." },
+        { label: "Temperatura",     val: "Batería se descarga más rápido en frío. Llevar 3+ baterías y guardarlas en el bolsillo." },
+        { label: "Viento",          val: "La Patagonia es muy ventosa. Revisar pronóstico antes. Volar con viento <20 km/h." },
+        { label: "Regulación",      val: "Argentina: dron recreativo hasta 120 m de altura. Registrar en ANAC si aplica." },
+      ],
+    },
+  };
+
+  function buildVideoScript() {
+    const root = document.getElementById("video-script-root");
+
+    // ── Overview stats ──
+    const stats = Object.values(VIDEO_SCRIPT.overview).map(s => `
+      <div class="vs-stat">
+        <div class="vs-stat-label">${s.label}</div>
+        <div class="vs-stat-value">${s.value}</div>
+        <div class="vs-stat-sub">${s.sub}</div>
+      </div>`).join("");
+
+    // ── Music bar ──
+    const tracks = VIDEO_SCRIPT.music.map(t => `
+      <a class="vs-music-track" href="${t.url}" target="_blank" rel="noopener">
+        🎵 <strong>${t.title}</strong> — ${t.artist}
+        <span class="track-mood">· ${t.mood}</span>
+      </a>`).join("");
+
+    // ── Scenes ──
+    const TYPE_META = {
+      drone:  { badge: "badge-drone",  label: "🚁 Drone" },
+      ground: { badge: "badge-ground", label: "📷 Cámara" },
+      tl:     { badge: "badge-tl",     label: "⏱ T-lapse" },
+      audio:  { badge: "badge-audio",  label: "🎙 Audio" },
+    };
+
+    const scenes = VIDEO_SCRIPT.scenes.map(sc => {
+      const shots = sc.shots.map(s => {
+        const m = TYPE_META[s.type] ?? TYPE_META.ground;
+        return `
+          <div class="vs-shot">
+            <span class="vs-shot-badge ${m.badge}">${m.label}</span>
+            <div class="vs-shot-body">
+              <div class="vs-shot-name">${s.name}</div>
+              <div class="vs-shot-desc">${s.desc}</div>
+            </div>
+          </div>`;
+      }).join("");
+
+      return `
+        <div class="vs-scene">
+          <div class="vs-scene-header">
+            <div class="vs-scene-num" style="background:${sc.color}">0${sc.num}</div>
+            <div class="vs-scene-info">
+              <div class="vs-scene-name">${sc.name}</div>
+              <div class="vs-scene-meta">${sc.dates} · ${sc.shots.length} shots</div>
+            </div>
+            <div class="vs-scene-time">${sc.timecode}</div>
+          </div>
+          <div class="vs-shots">${shots}</div>
+        </div>`;
+    }).join("");
+
+    // ── Style guide ──
+    const makeStyleCard = (heading, items) => `
+      <div class="vs-style-card">
+        <div class="vs-style-heading">${heading}</div>
+        ${items.map(i => `<div class="vs-style-item"><strong>${i.label}:</strong> ${i.val}</div>`).join("")}
+      </div>`;
+
+    const styleCards = [
+      makeStyleCard("🎨 Color Grade", VIDEO_SCRIPT.style.grade),
+      makeStyleCard("✂️ Transiciones", VIDEO_SCRIPT.style.transitions),
+      makeStyleCard("🚁 Equipo & Tips", VIDEO_SCRIPT.style.gear),
+    ].join("");
+
+    root.innerHTML = `
+      <div class="vs-overview">${stats}</div>
+
+      <div class="vs-music-bar">
+        <div>
+          <div class="vs-music-title">🎵 Música sugerida — hacer click para escuchar en Spotify</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem">${tracks}</div>
+        </div>
+      </div>
+
+      <div class="vs-scenes">${scenes}</div>
+
+      <div style="margin-bottom:0.6rem">
+        <div class="vs-music-title" style="padding:0 0.2rem 0.4rem">🎨 Style Guide — Color, Transiciones & Gear</div>
+      </div>
+      <div class="vs-style">${styleCards}</div>
+    `;
+  }
+
+  buildVideoScript();
 </script>
 </body>
 </html>
