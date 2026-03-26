@@ -389,6 +389,150 @@
     .itin-activity .act-text { line-height: 1.4; color: var(--text); }
     .itin-activity .act-text small { color: var(--muted); display: block; font-size: 0.75rem; }
 
+    /* ── Places to Visit ─────────────────────────────── */
+    .places-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      padding: 0 2rem 3rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1100px) {
+      .places-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .places-grid { grid-template-columns: 1fr; max-width: 520px; }
+    }
+
+    .place-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .place-card-header {
+      padding: 1rem 1.2rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .place-card-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .place-card-title { font-size: 0.95rem; font-weight: 700; }
+    .place-card-subtitle { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .place-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0.7rem 1.2rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-pill {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.7rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .filter-pill:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-pill.active { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+
+    .place-list {
+      padding: 0.5rem 1rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 420px;
+    }
+
+    .place-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.5rem 0.4rem;
+      border-radius: 0.5rem;
+      transition: background 0.12s;
+      text-decoration: none;
+    }
+
+    .place-item:hover { background: rgba(255,255,255,0.05); }
+
+    .place-item-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .place-item-body { flex: 1; min-width: 0; }
+
+    .place-item-name {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .place-item-name .maps-link {
+      font-size: 0.65rem;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--accent);
+      border-radius: 0.4rem;
+      padding: 0.05rem 0.35rem;
+      white-space: nowrap;
+      opacity: 0.8;
+      transition: opacity 0.15s;
+    }
+
+    .place-item-name .maps-link:hover { opacity: 1; }
+
+    .place-item-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-top: 0.1rem;
+    }
+
+    .place-cat-badge {
+      display: inline-block;
+      font-size: 0.62rem;
+      padding: 0.05rem 0.35rem;
+      border-radius: 0.3rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      vertical-align: middle;
+    }
+
+    .cat-naturaleza { background: rgba(76,175,80,0.18); color: #81c784; }
+    .cat-gastronomia { background: rgba(255,183,77,0.18); color: #ffd54f; }
+    .cat-actividad { background: rgba(79,195,247,0.18); color: #4fc3f7; }
+    .cat-tip { background: rgba(206,147,216,0.18); color: #ce93d8; }
+
     /* ── Costs ───────────────────────────────────────── */
     .costs-grid {
       display: grid;
@@ -554,6 +698,13 @@
   <p>Curated activities for each stop on your trip</p>
 </div>
 <div class="itinerary-grid" id="itinerary-grid"></div>
+
+<!-- Places to Visit -->
+<div class="section-title">
+  <h2>📍 Lugares & Gastronomía</h2>
+  <p>Lugares para visitar, comer y disfrutar en cada destino</p>
+</div>
+<div class="places-grid" id="places-grid"></div>
 
 <!-- Trip Costs -->
 <div class="section-title">
@@ -855,6 +1006,7 @@
     });
 
     map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] });
+    addPOIsToMap(map);
   }
 
   // ── Itinerary ──────────────────────────────────────────────────────────────
@@ -993,6 +1145,226 @@
       grid.appendChild(card);
     });
   }
+
+  // ── Places to Visit ────────────────────────────────────────────────────────
+
+  const PLACES_DATA = [
+    {
+      name: "Bariloche",
+      color: MAP_COLORS[0],
+      subtitle: "Abr 3 – 4 · 2 noches",
+      places: [
+        // Naturaleza
+        { cat: "naturaleza", icon: "🏔️", name: "Cerro Campanario", desc: "Una de las 10 mejores vistas del mundo. Aerosilla o trekking de 30 min.", maps: "https://maps.app.goo.gl/Q5Y3TwPkT6zY8kAZ6" },
+        { cat: "naturaleza", icon: "🌊", name: "Bahía López", desc: "Espectacular para ver el atardecer sobre el lago Nahuel Huapi.", maps: "https://maps.app.goo.gl/r8fWoNAz3h3H9wFr9" },
+        { cat: "naturaleza", icon: "🏝️", name: "Península Llao Llao", desc: "La joya de Bariloche. Hotel icónico, Capilla San Eduardo y vistas únicas.", maps: "https://maps.app.goo.gl/ZNVZ3xUDsGMa7YCMA" },
+        { cat: "naturaleza", icon: "🌳", name: "Colonia Suiza", desc: "Pueblo pintoresco a 25 km. Feria los domingos (11–18 hs), curanto y casas de té.", maps: "https://maps.app.goo.gl/yNzY7x4h9r6MfHzS6" },
+        { cat: "naturaleza", icon: "🏞️", name: "Lago Escondido", desc: "Mirador natural de gran belleza escondido entre el bosque patagónico.", maps: "https://maps.app.goo.gl/UdYbqt1h8qH3PXRX8" },
+        { cat: "naturaleza", icon: "⛵", name: "Isla Victoria", desc: "Excursión en catamarán con 3.5 hs en la isla y 45 min en el Bosque de Arrayanes.", maps: "https://maps.app.goo.gl/KkBHdgWm2LVjcZUj6" },
+        // Gastronomia
+        { cat: "gastronomia", icon: "🍺", name: "Cervecería Manush", desc: "La mejor cerveza artesanal de Bariloche. Ambiente animado y buena cocina.", maps: "https://maps.app.goo.gl/7tEgVWtXfD4fMRDP7" },
+        { cat: "gastronomia", icon: "🥩", name: "El Boliche de Alberto", desc: "Parrilla patagónica icónica. Cordero al palo y cortes premium. Reserva.", maps: "https://maps.app.goo.gl/MrkRiJ9hSm9AQMXW7" },
+        { cat: "gastronomia", icon: "🍫", name: "Mamuschka", desc: "La chocolatería más famosa de la ciudad. Chocolate en barra de la barra más larga del mundo.", maps: "https://maps.app.goo.gl/q5fGzpX1cYsS1fqB9" },
+        { cat: "gastronomia", icon: "🍦", name: "Helados Época de Quesos", desc: "Helados artesanales únicos con sabores de quesos y frutos del bosque patagónico.", maps: "https://maps.app.goo.gl/WfAp5HThXF9wCvbW9" },
+        { cat: "gastronomia", icon: "🫖", name: "La Casita de Té (Llao Llao)", desc: "Casa de té en plena Península Llao Llao. Tortas caseras y vista al lago.", maps: "https://maps.app.goo.gl/X3P9DmH1k9E2R7Hv5" },
+        // Actividades
+        { cat: "actividad", icon: "🎿", name: "Parque Nacional Nahuel Huapi", desc: "800.000 ha de glaciares, volcanes y bosques. El parque nacional más antiguo de Argentina.", maps: "https://maps.app.goo.gl/uGPXSdTk9c1j2FWF9" },
+        { cat: "actividad", icon: "🛤️", name: "Circuito Chico (60 km)", desc: "El clásico de Bariloche. En auto (~4 hs), recorre los mejores paisajes del lago.", maps: "https://maps.app.goo.gl/LRXH5JqGUvNJmRGp7" },
+        // Tips
+        { cat: "tip", icon: "💡", name: "Ticket Parque Nacional", desc: "Guardá el ticket del primer día: el segundo día tenés 50% de descuento en el ingreso." },
+        { cat: "tip", icon: "🕐", name: "Mejor hora para el Campanario", desc: "Ir temprano (9–10 hs) para evitar filas y tener mejor luz para fotos." },
+        { cat: "tip", icon: "🅿️", name: "Estacionamiento Centro", desc: "Difícil en temporada. Dejá el auto en el hotel y caminá o usá remis para el centro." },
+      ],
+    },
+    {
+      name: "Villa La Angostura",
+      color: MAP_COLORS[1],
+      subtitle: "Abr 5 – 6 · 2 noches",
+      places: [
+        // Naturaleza
+        { cat: "naturaleza", icon: "🌳", name: "Parque Nacional Los Arrayanes", desc: "El único bosque de arrayán colorado del mundo. A 12 km del centro, en barco o caminando.", maps: "https://maps.app.goo.gl/3U5P8j3qT7n2FCBS9" },
+        { cat: "naturaleza", icon: "🏖️", name: "Playa y Río Correntoso", desc: "Uno de los ríos más cortos del mundo (200 m). Hermoso mirador y playa de piedras.", maps: "https://maps.app.goo.gl/8t5FhFbnLjHpZ8eY8" },
+        { cat: "naturaleza", icon: "💧", name: "Cascada Inacayal", desc: "Trekking fácil de 1.5 hs ida y vuelta. Cascada de 50 m en el bosque nativo.", maps: "https://maps.app.goo.gl/g7gJcVpjEYXAFqEq9" },
+        { cat: "naturaleza", icon: "🌿", name: "Laguna Verde", desc: "Laguna de color esmeralda escondida en el bosque. Trekking de media jornada.", maps: "https://maps.app.goo.gl/TcgW5a4sAtH5D2Qs6" },
+        { cat: "naturaleza", icon: "⛰️", name: "Mirador Belvedere", desc: "Vista panorámica del Lago Nahuel Huapi. Subida de 45 min desde el centro.", maps: "https://maps.app.goo.gl/e2pX7kGFsf6pn84RA" },
+        // Actividades
+        { cat: "actividad", icon: "🥾", name: "Cascada Santa Ana", desc: "3 hs de trekking por bosque nativo. Salir a las 10 hs. Llevar agua y snacks.", maps: "https://maps.app.goo.gl/vRoiJWq7qxFBiRi57" },
+        { cat: "actividad", icon: "⚓", name: "Puerto La Angostura", desc: "Puerto tranquilo a pasos del hotel. Ideal para alquilar kayak o bote a pedal.", maps: "https://maps.app.goo.gl/F36wUxsLTaTSk1JD9" },
+        // Gastronomia
+        { cat: "gastronomia", icon: "🍷", name: "Tinto Bistró", desc: "El restaurante más recomendado del pueblo. Cocina de autor, excelente carta de vinos.", maps: "https://maps.app.goo.gl/nFe5JxWqL5hLzKPE9" },
+        { cat: "gastronomia", icon: "🫖", name: "La Casita de Yein", desc: "Casa de té encantadora. Strudel, scones y tortas caseras en un jardín de ensueño.", maps: "https://maps.app.goo.gl/rBkFHqVZLYiPLjLM8" },
+        { cat: "gastronomia", icon: "🥐", name: "Panadería del Pueblo", desc: "Pan de campo, medialunas y facturas para el desayuno. Abre desde las 7 hs.", maps: "https://maps.app.goo.gl/VkWUc5c8TnCvxkFR6" },
+        // Tips
+        { cat: "tip", icon: "💡", name: "Colonia Suiza → VLA", desc: "Si vas a Colonia Suiza el domingo, el camino a Villa La Angostura queda del lado contrario. Son ~2 hs de diferencia de ruta." },
+        { cat: "tip", icon: "🛂", name: "Cruce a Chile", desc: "El Paso Cardenal Samoré está a 15 km. Consultar requisitos de aduana si se planea cruzar." },
+      ],
+    },
+    {
+      name: "Villa Traful",
+      color: MAP_COLORS[2],
+      subtitle: "Abr 7 – 8 · 2 noches",
+      places: [
+        // Naturaleza
+        { cat: "naturaleza", icon: "🤿", name: "Bosque Sumergido", desc: "Cipresales sumergidos bajo el lago Traful tras un aluvión. Fenómeno único en el mundo.", maps: "https://maps.app.goo.gl/HacokUbp5Cezb1BE7" },
+        { cat: "naturaleza", icon: "💦", name: "Cascada Coa Có", desc: "Cascada de 20 m a 7 km del centro. Trekking por bosque de lenga y ciprés.", maps: "https://maps.app.goo.gl/JzgX7K3uYN1c8fkh7" },
+        { cat: "naturaleza", icon: "🏕️", name: "Playa del Lago Traful", desc: "Playa de piedras de aguas cristalinas y transparentes. Ideal para kayak y pesca.", maps: "https://maps.app.goo.gl/vNh6qV5dQJSmRqBe7" },
+        { cat: "naturaleza", icon: "🌅", name: "Mirador Los Gigantes", desc: "Vista de 360° sobre el lago y la cordillera. Trekking de 2.5 hs ida y vuelta.", maps: "https://maps.app.goo.gl/nD8A6jQe7Zv2cD6v9" },
+        // Actividades
+        { cat: "actividad", icon: "🚣", name: "Kayak en el Lago Traful", desc: "Alquiler disponible en el centro del pueblo. El lago es calmo y cristalino. $$$", maps: "https://maps.app.goo.gl/HacokUbp5Cezb1BE7" },
+        { cat: "actividad", icon: "🎣", name: "Pesca con mosca", desc: "Villa Traful es un destino de fly fishing clase mundial. Truchas marrón y arcoíris.", maps: "https://maps.app.goo.gl/HacokUbp5Cezb1BE7" },
+        { cat: "actividad", icon: "🤿", name: "Traful Extremo (buceo)", desc: "+54 9 2944 21-0759. Bautismo de buceo en el Bosque Sumergido. $120.000 por persona.", maps: "https://latitur.com/actividades/villa_traful/Navegacion_/navegacion-al-bosque-sumergido-de-villa-traful/121615" },
+        // Gastronomia
+        { cat: "gastronomia", icon: "🍻", name: "Nancu Lahuen", desc: "El parador más popular del lago. Trucha fresca, cerveza artesanal y vista al lago.", maps: "https://maps.app.goo.gl/HacokUbp5Cezb1BE7" },
+        { cat: "gastronomia", icon: "🔥", name: "Asado en el camping", desc: "Villa Traful es muy pequeña. Lo mejor es comprar en el almacén y hacer asado propio.", maps: "https://maps.app.goo.gl/HacokUbp5Cezb1BE7" },
+        // Tips
+        { cat: "tip", icon: "💡", name: "Pueblo muy pequeño", desc: "Solo ~400 habitantes. Hay un único almacén. Conviene llevar provisiones desde VLA." },
+        { cat: "tip", icon: "📵", name: "Conectividad limitada", desc: "Señal muy débil. Descargar mapas offline y toda la info necesaria antes de llegar." },
+        { cat: "tip", icon: "⛽", name: "Combustible", desc: "No hay estación de servicio en Traful. Cargar nafta en Villa La Angostura o en Confluencia." },
+      ],
+    },
+    {
+      name: "San Martín de los Andes",
+      color: MAP_COLORS[3],
+      subtitle: "Abr 9 – 11 · 3 noches",
+      places: [
+        // Naturaleza
+        { cat: "naturaleza", icon: "⛵", name: "Quila Quina", desc: "Bahía hermosa a 18 km en lancha sobre el Lago Lácar. Playa, cascada y comunidad mapuche.", maps: "https://maps.app.goo.gl/8JxVbJBjE5PF9Ua79" },
+        { cat: "naturaleza", icon: "🛣️", name: "Ruta de los 7 Lagos", desc: "Una de las rutas más bellas del mundo. Lagos Villarino, Falkner, Hermoso, Escondido.", maps: "https://maps.app.goo.gl/AEpMCKN6bWN6c3PC7" },
+        { cat: "naturaleza", icon: "💦", name: "Cascada Ñivico", desc: "Al inicio de la Ruta de los 7 Lagos. Cascada de 20 m en pleno bosque.", maps: "https://maps.app.goo.gl/w7jPVFCYjHGmVPd49" },
+        { cat: "naturaleza", icon: "🏔️", name: "Cerro Chapelco", desc: "Centro de ski. En abril no hay nieve pero el teleférico funciona para vistas panorámicas.", maps: "https://maps.app.goo.gl/jt2dZsD8H3YZmUAv6" },
+        { cat: "naturaleza", icon: "🌊", name: "Lago Lácar", desc: "Lago de aguas color turquesa. Hermoso para kayak y excursiones en lancha desde el puerto.", maps: "https://maps.app.goo.gl/AEpMCKN6bWN6c3PC7" },
+        // Gastronomia
+        { cat: "gastronomia", icon: "🥩", name: "El Regionario", desc: "Lo mejor de la cocina patagónica local. Jabalí, ciervo y trucha en preparaciones únicas.", maps: "https://maps.app.goo.gl/WnKiQ8sZY6VzVgdw9" },
+        { cat: "gastronomia", icon: "🌿", name: "Pura Vida", desc: "Cocina saludable y creativa. Excelentes opciones vegetarianas con ingredientes locales.", maps: "https://maps.app.goo.gl/S7A3jBpH5frCVwkJ7" },
+        { cat: "gastronomia", icon: "🍺", name: "Cervecería Kume Felen", desc: "Cervecería artesanal con recetas propias. La mejor para cerrar la última noche.", maps: "https://maps.app.goo.gl/DqYdxMf2Ks5H6bQi9" },
+        { cat: "gastronomia", icon: "☕", name: "Café de la Plaza", desc: "El más lindo de la ciudad. Croissants artesanales y café de especialidad frente a la plaza.", maps: "https://maps.app.goo.gl/AEpMCKN6bWN6c3PC7" },
+        // Actividades
+        { cat: "actividad", icon: "🛶", name: "Kayak Lago Lácar", desc: "Alquiler en el puerto. También hay excursiones guiadas de 2 hs a Quila Quina.", maps: "https://maps.app.goo.gl/ZqtBGPfAHUn4F7HGA" },
+        { cat: "actividad", icon: "🚴", name: "Bici por el lago", desc: "Alquiler de bicis en el centro. Ciclovía que bordea el Lago Lácar hacia el oeste.", maps: "https://maps.app.goo.gl/AEpMCKN6bWN6c3PC7" },
+        // Tips
+        { cat: "tip", icon: "💡", name: "San Martín → Bariloche", desc: "Son ~2.5 hs de manejo el último día. Salir a las 8:30 para llegar al aeropuerto con tiempo." },
+        { cat: "tip", icon: "🗓️", name: "Feria Artesanal", desc: "Feria de artesanos los fines de semana en la plaza principal. Excelente para souvenirs." },
+      ],
+    },
+  ];
+
+  // ── POI markers for the map ──────────────────────────────────────────────
+
+  const MAP_POIS = [
+    // Bariloche
+    { name: "Cerro Campanario", cat: "naturaleza", latlng: [-41.0758, -71.4833], maps: "https://maps.app.goo.gl/Q5Y3TwPkT6zY8kAZ6" },
+    { name: "Península Llao Llao", cat: "naturaleza", latlng: [-41.0608, -71.5703], maps: "https://maps.app.goo.gl/ZNVZ3xUDsGMa7YCMA" },
+    { name: "Bahía López", cat: "naturaleza", latlng: [-41.0887, -71.5572], maps: "https://maps.app.goo.gl/r8fWoNAz3h3H9wFr9" },
+    { name: "Colonia Suiza", cat: "gastronomia", latlng: [-41.1030, -71.5200], maps: "https://maps.app.goo.gl/yNzY7x4h9r6MfHzS6" },
+    { name: "El Boliche de Alberto", cat: "gastronomia", latlng: [-41.1340, -71.3108], maps: "https://maps.app.goo.gl/MrkRiJ9hSm9AQMXW7" },
+    { name: "Isla Victoria", cat: "actividad", latlng: [-41.0578, -71.2333], maps: "https://maps.app.goo.gl/KkBHdgWm2LVjcZUj6" },
+    // Villa La Angostura
+    { name: "Parque Los Arrayanes", cat: "naturaleza", latlng: [-40.7800, -71.6500], maps: "https://maps.app.goo.gl/3U5P8j3qT7n2FCBS9" },
+    { name: "Río Correntoso", cat: "naturaleza", latlng: [-40.7456, -71.6714], maps: "https://maps.app.goo.gl/8t5FhFbnLjHpZ8eY8" },
+    { name: "Cascada Santa Ana", cat: "actividad", latlng: [-40.7900, -71.6700], maps: "https://maps.app.goo.gl/vRoiJWq7qxFBiRi57" },
+    // Villa Traful
+    { name: "Bosque Sumergido", cat: "actividad", latlng: [-40.6560, -71.6850], maps: "https://maps.app.goo.gl/HacokUbp5Cezb1BE7" },
+    { name: "Cascada Coa Có", cat: "naturaleza", latlng: [-40.6700, -71.6900], maps: "https://maps.app.goo.gl/JzgX7K3uYN1c8fkh7" },
+    // San Martín de los Andes
+    { name: "Quila Quina", cat: "naturaleza", latlng: [-40.2100, -71.3800], maps: "https://maps.app.goo.gl/8JxVbJBjE5PF9Ua79" },
+    { name: "Cascada Ñivico", cat: "naturaleza", latlng: [-40.2800, -71.5100], maps: "https://maps.app.goo.gl/w7jPVFCYjHGmVPd49" },
+    { name: "El Regionario", cat: "gastronomia", latlng: [-40.1572, -71.3530], maps: "https://maps.app.goo.gl/WnKiQ8sZY6VzVgdw9" },
+  ];
+
+  const POI_STYLE = {
+    naturaleza:  { bg: "#81c784", emoji: "🌿" },
+    gastronomia: { bg: "#ffd54f", emoji: "🍽️" },
+    actividad:   { bg: "#4fc3f7", emoji: "🎯" },
+  };
+
+  function addPOIsToMap(map) {
+    MAP_POIS.forEach(poi => {
+      const style = POI_STYLE[poi.cat] ?? POI_STYLE.naturaleza;
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="
+          width:26px;height:26px;border-radius:50%;
+          background:${style.bg};
+          border:2px solid #0d1b2a;
+          display:flex;align-items:center;justify-content:center;
+          font-size:12px;
+          box-shadow:0 2px 6px rgba(0,0,0,0.5);
+          cursor:pointer;
+        ">${style.emoji}</div>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+      });
+      L.marker(poi.latlng, { icon })
+        .addTo(map)
+        .bindPopup(`
+          <strong style="color:#0d1b2a">${poi.name}</strong><br>
+          <a href="${poi.maps}" target="_blank" style="font-size:11px;color:#1565c0">📍 Ver en Maps</a>
+        `);
+    });
+  }
+
+  // ── Places section renderer ──────────────────────────────────────────────
+
+  function buildPlaces() {
+    const grid = document.getElementById("places-grid");
+    grid.innerHTML = "";
+
+    PLACES_DATA.forEach(dest => {
+      const card = document.createElement("div");
+      card.className = "place-card";
+
+      const cats = ["todos", ...new Set(dest.places.map(p => p.cat))];
+      const catLabels = { todos: "Todos", naturaleza: "🌿 Naturaleza", gastronomia: "🍽️ Gastronomía", actividad: "🎯 Actividades", tip: "💡 Tips" };
+
+      card.innerHTML = `
+        <div class="place-card-header">
+          <div class="place-card-dot" style="background:${dest.color}"></div>
+          <div>
+            <div class="place-card-title">${dest.name}</div>
+            <div class="place-card-subtitle">${dest.subtitle}</div>
+          </div>
+        </div>
+        <div class="place-filters">
+          ${cats.map(c => `<button class="filter-pill${c === "todos" ? " active" : ""}" data-cat="${c}">${catLabels[c] ?? c}</button>`).join("")}
+        </div>
+        <div class="place-list" id="list-${dest.name.replace(/\s/g, "-")}">
+          ${renderPlaceItems(dest.places, "todos")}
+        </div>
+      `;
+
+      // Wire up filter pills
+      card.querySelectorAll(".filter-pill").forEach(btn => {
+        btn.addEventListener("click", () => {
+          card.querySelectorAll(".filter-pill").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const listEl = card.querySelector(".place-list");
+          listEl.innerHTML = renderPlaceItems(dest.places, btn.dataset.cat);
+        });
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+  function renderPlaceItems(places, catFilter) {
+    const filtered = catFilter === "todos" ? places : places.filter(p => p.cat === catFilter);
+    return filtered.map(p => {
+      const catClass = `cat-${p.cat}`;
+      const mapsBtn  = p.maps ? `<a class="maps-link" href="${p.maps}" target="_blank" rel="noopener">📍 Maps</a>` : "";
+      return `
+        <div class="place-item">
+          <span class="place-item-icon">${p.icon}</span>
+          <div class="place-item-body">
+            <div class="place-item-name">
+              ${p.name} ${mapsBtn}
+            </div>
+            <div class="place-item-desc">${p.desc}</div>
+          </div>
+        </div>`;
+    }).join("") || `<div style="color:var(--muted);font-size:0.8rem;padding:0.5rem">No hay items en esta categoría.</div>`;
+  }
+
+  buildPlaces();
 
   buildItinerary();
   initMap();
