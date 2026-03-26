@@ -172,32 +172,32 @@
       border-radius: 0.6rem;
       padding: 0.75rem 1rem;
       display: grid;
-      grid-template-columns: 90px 2.5rem 1fr auto auto;
+      grid-template-columns: 80px 2.2rem 1fr auto;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
       transition: background 0.15s;
     }
 
     .day-row:hover { background: rgba(255,255,255,0.06); }
 
     .day-label {
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       color: var(--muted);
     }
 
     .day-label strong {
       display: block;
       color: var(--text);
-      font-size: 0.95rem;
+      font-size: 0.88rem;
     }
 
     .weather-icon {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       text-align: center;
     }
 
     .weather-desc {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
       line-height: 1.3;
     }
@@ -208,21 +208,22 @@
     }
 
     .temp-max {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: var(--sun);
     }
 
     .temp-min {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--muted);
     }
 
     .precip {
       text-align: right;
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       color: var(--rain);
       white-space: nowrap;
+      display: block;
     }
 
     .precip.none { color: var(--muted); }
@@ -669,8 +670,10 @@
           <div class="day-label"><strong>${formatDate(date)}</strong></div>
           <div class="weather-icon">…</div>
           <div class="weather-desc"><div class="skeleton" style="width:80%"></div></div>
-          <div class="temp-range"><div class="skeleton" style="width:40px"></div></div>
-          <div class="precip"><div class="skeleton" style="width:30px"></div></div>
+          <div class="temp-range">
+            <div class="skeleton" style="width:50px"></div>
+            <div class="skeleton" style="width:36px;margin-top:4px"></div>
+          </div>
         `;
         daysContainer.appendChild(row);
       });
@@ -700,7 +703,6 @@
       <div class="weather-icon">🕐</div>
       <div class="weather-desc" style="color:var(--muted)">Not yet available</div>
       <div class="temp-range" style="color:var(--muted)">—</div>
-      <div class="precip none">—</div>
     `;
   }
 
@@ -755,8 +757,8 @@
           <div class="temp-range">
             <span class="temp-max">${Math.round(tmax)}°C</span>
             <span class="temp-min"> / ${Math.round(tmin)}°C</span>
+            <span class="precip${precip <= 0 ? " none" : ""}">${precipStr}</span>
           </div>
-          <div class="precip${precip <= 0 ? " none" : ""}">${precipStr}</div>
         `;
       });
 
@@ -771,7 +773,6 @@
             <div class="weather-icon">⚠️</div>
             <div class="weather-desc" style="color:#ef9a9a">Failed to load</div>
             <div class="temp-range">—</div>
-            <div class="precip none">—</div>
           `;
         }
       });
