@@ -1,0 +1,70 @@
+{
+  "lastUpdated": "2026-03-26T18:16:51.950Z",
+  "docId": "1ZPkHp-xo_Jk9tohyX22k2jvwQHMoA5pjbc7Fnr_ZIt4",
+  "costs": {
+    "car": {
+      "label": "Andares Rent Car · Reserva #3470",
+      "ars": 476000,
+      "note": "Efectivo al retirar en aeropuerto",
+      "status": "cash"
+    },
+    "accommodations": [
+      {
+        "location": "Bariloche",
+        "address": "1760 Eduardo Elordi",
+        "dates": "Abr 3–4",
+        "ars": 82332,
+        "usd": 57.98,
+        "note": "Seña pagada $42.600 (30 USD) · resta pagar",
+        "status": "partial"
+      },
+      {
+        "location": "Villa La Angostura",
+        "address": "Blvd. Nahuel Huapi 1911",
+        "dates": "Abr 5–6",
+        "ars": 210032,
+        "usd": 147.91,
+        "note": "Boulevard Nahuel Huapi 1911",
+        "status": "pending"
+      },
+      {
+        "location": "Villa Traful",
+        "address": "Ruta 65 km 35",
+        "dates": "Abr 7–8",
+        "ars": 361986,
+        "usd": 254.92,
+        "note": "Pagar 50% antes del 1/4/2026",
+        "status": "attention"
+      },
+      {
+        "location": "San Martín de los Andes",
+        "address": "Coronel Perez 1127",
+        "dates": "Abr 9–11",
+        "ars": 194838,
+        "usd": 137.21,
+        "note": "Se carga el importe total por adelantado",
+        "status": "pending"
+      }
+    ],
+    "activities": [
+      {
+        "name": "Isla Victoria + Bosque de Arrayanes",
+        "ars": 140000,
+        "note": "Por persona · Abr 4",
+        "status": "pending"
+      },
+      {
+        "name": "Ingreso Parque Nacional",
+        "ars": 7000,
+        "note": "Ticket día 1 → 50% descuento día 2",
+        "status": "pending"
+      },
+      {
+        "name": "Bosque Sumergido de Villa Traful",
+        "ars": 120000,
+        "note": "Traful Extremo · +54 9 2944 21-0759 · 2 hs · Abr 8",
+        "status": "pending"
+      }
+    ]
+  }
+}

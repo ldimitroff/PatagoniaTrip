@@ -387,6 +387,138 @@
 
     .itin-activity .act-text { line-height: 1.4; color: var(--text); }
     .itin-activity .act-text small { color: var(--muted); display: block; font-size: 0.75rem; }
+
+    /* ── Costs ───────────────────────────────────────── */
+    .costs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      padding: 0 2rem 3rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .costs-grid {
+        grid-template-columns: 1fr;
+        max-width: 520px;
+      }
+    }
+
+    .cost-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+
+    .cost-card-header {
+      padding: 1rem 1.2rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .cost-card-icon { font-size: 1.3rem; }
+
+    .cost-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .cost-card-subtitle {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+
+    .cost-card-body {
+      padding: 0.75rem 1.2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .cost-row:last-child { border-bottom: none; }
+
+    .cost-label { color: var(--muted); line-height: 1.4; }
+    .cost-label strong { display: block; color: var(--text); font-size: 0.85rem; }
+
+    .cost-amount {
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .cost-amount .ars { color: var(--sun); font-size: 0.9rem; }
+    .cost-amount .usd { color: var(--muted); font-size: 0.72rem; display: block; }
+
+    .cost-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 1rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.2rem;
+    }
+
+    .badge-paid { background: rgba(76,175,80,0.2); color: #81c784; }
+    .badge-pending { background: rgba(255,183,77,0.2); color: #ffd54f; }
+    .badge-cash { background: rgba(79,195,247,0.2); color: #4fc3f7; }
+    .badge-attention { background: rgba(229,57,53,0.2); color: #ef9a9a; }
+
+    .cost-total-bar {
+      margin: 0 2rem 2rem;
+      max-width: 1600px;
+      margin-left: auto;
+      margin-right: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 2rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cost-total-bar .total-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .cost-total-bar .total-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--sun);
+    }
+
+    .cost-total-bar .total-usd {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .cost-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -421,6 +553,19 @@
   <p>Curated activities for each stop on your trip</p>
 </div>
 <div class="itinerary-grid" id="itinerary-grid"></div>
+
+<!-- Trip Costs -->
+<div class="section-title">
+  <h2>💰 Trip Costs</h2>
+  <p id="costs-subtitle">Resumen de gastos · TC referencia $1.420 ARS/USD</p>
+</div>
+
+<div class="costs-grid" id="costs-grid">
+  <!-- Rendered by buildCosts() from data.json -->
+  <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem">Cargando costos…</div>
+</div>
+
+<div id="costs-total" style="padding: 0 2rem 2rem; max-width: 1600px; margin: 0 auto;"></div>
 
 <footer>
   Weather data by <a href="https://open-meteo.com/" target="_blank">Open-Meteo</a> · Free & no API key required
@@ -850,6 +995,171 @@
 
   buildItinerary();
   initMap();
+
+  // ── Costs (loaded from data.json, synced from Google Doc) ─────────────────
+
+  const BADGE = {
+    cash:      { cls: "badge-cash",      label: "Efectivo" },
+    paid:      { cls: "badge-paid",      label: "Pagado" },
+    partial:   { cls: "badge-paid",      label: "Seña pagada" },
+    pending:   { cls: "badge-pending",   label: "Pendiente" },
+    attention: { cls: "badge-attention", label: "⚠ Atención" },
+  };
+
+  function fmtARS(n) {
+    return "$" + Math.round(n).toLocaleString("es-AR");
+  }
+
+  function buildCosts(data) {
+    const { costs, lastUpdated } = data;
+    const TC = 1420;
+
+    // Update subtitle with last-synced timestamp
+    const syncDate = new Date(lastUpdated);
+    document.getElementById("costs-subtitle").textContent =
+      `Resumen de gastos · TC referencia $${TC.toLocaleString("es-AR")} ARS/USD · Sync: ${syncDate.toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })}`;
+
+    const grid = document.getElementById("costs-grid");
+    grid.innerHTML = "";
+
+    // ── Card 1: Transportation ──
+    if (costs.car) {
+      const c = costs.car;
+      const badge = BADGE[c.status] ?? BADGE.pending;
+      const usd = c.usd ?? Math.round(c.ars / TC);
+      grid.innerHTML += `
+        <div class="cost-card">
+          <div class="cost-card-header">
+            <span class="cost-card-icon">🚗</span>
+            <div>
+              <div class="cost-card-title">Transporte</div>
+              <div class="cost-card-subtitle">Auto de alquiler · 9 días</div>
+            </div>
+          </div>
+          <div class="cost-card-body">
+            <div class="cost-row">
+              <div class="cost-label">
+                <strong>${c.label}</strong>
+                ${c.note}
+                <span class="cost-badge ${badge.cls}">${badge.label}</span>
+              </div>
+              <div class="cost-amount">
+                <span class="ars">${fmtARS(c.ars)}</span>
+                <span class="usd">~$${usd} USD</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ── Card 2: Accommodations ──
+    if (costs.accommodations?.length) {
+      const rows = costs.accommodations.map(a => {
+        const badge = BADGE[a.status] ?? BADGE.pending;
+        const usd = a.usd ?? Math.round(a.ars / TC);
+        return `
+          <div class="cost-row">
+            <div class="cost-label">
+              <strong>${a.location} · ${a.dates}</strong>
+              ${a.address}
+              <span class="cost-badge ${badge.cls}">${a.note}</span>
+            </div>
+            <div class="cost-amount">
+              <span class="ars">${fmtARS(a.ars)}</span>
+              <span class="usd">~$${usd} USD</span>
+            </div>
+          </div>`;
+      }).join("");
+
+      grid.innerHTML += `
+        <div class="cost-card">
+          <div class="cost-card-header">
+            <span class="cost-card-icon">🏨</span>
+            <div>
+              <div class="cost-card-title">Alojamientos</div>
+              <div class="cost-card-subtitle">${costs.accommodations.length} destinos</div>
+            </div>
+          </div>
+          <div class="cost-card-body">${rows}</div>
+        </div>`;
+    }
+
+    // ── Card 3: Activities ──
+    if (costs.activities?.length) {
+      const rows = costs.activities.map(a => `
+        <div class="cost-row">
+          <div class="cost-label">
+            <strong>${a.name}</strong>
+            ${a.note}
+          </div>
+          <div class="cost-amount">
+            <span class="ars">${fmtARS(a.ars)}</span>
+            <span class="usd">por persona</span>
+          </div>
+        </div>`).join("");
+
+      grid.innerHTML += `
+        <div class="cost-card">
+          <div class="cost-card-header">
+            <span class="cost-card-icon">🎒</span>
+            <div>
+              <div class="cost-card-title">Actividades</div>
+              <div class="cost-card-subtitle">Excursiones y entradas</div>
+            </div>
+          </div>
+          <div class="cost-card-body">${rows}</div>
+        </div>`;
+    }
+
+    // ── Total bar ──
+    const accomTotal  = (costs.accommodations ?? []).reduce((s, a) => s + a.ars, 0);
+    const carTotal    = costs.car?.ars ?? 0;
+    const actTotal2p  = (costs.activities ?? []).reduce((s, a) => s + a.ars * 2, 0);
+    const grandTotal  = accomTotal + carTotal + actTotal2p;
+    const accomUsd    = Math.round((accomTotal + carTotal) / TC);
+    const grandUsd    = Math.round(grandTotal / TC);
+
+    // Find attention item for warning note
+    const attentionItem = costs.accommodations?.find(a => a.status === "attention");
+    const warningNote   = attentionItem
+      ? `⚠️ ${attentionItem.note} · Auto en <strong style="color:var(--text)">efectivo</strong> al retirar.`
+      : `Auto en <strong style="color:var(--text)">efectivo</strong> al retirar en aeropuerto.`;
+
+    document.getElementById("costs-total").innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:1rem 1.5rem;display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:0.85rem;color:var(--muted)">Total alojamientos + auto</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--sun)">${fmtARS(accomTotal + carTotal)}</div>
+          <div style="font-size:0.8rem;color:var(--muted)">~$${accomUsd} USD · sin actividades</div>
+        </div>
+        <div>
+          <div style="font-size:0.85rem;color:var(--muted)">Actividades (x2 personas)</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--accent)">${fmtARS(actTotal2p)}</div>
+          <div style="font-size:0.8rem;color:var(--muted)">${(costs.activities ?? []).map(a => a.name.split(" ")[0]).join(" + ")}</div>
+        </div>
+        <div>
+          <div style="font-size:0.85rem;color:var(--muted)">Total estimado del viaje</div>
+          <div style="font-size:1.3rem;font-weight:700;color:#81c784">${fmtARS(grandTotal)}</div>
+          <div style="font-size:0.8rem;color:var(--muted)">~$${grandUsd} USD · TC $${TC.toLocaleString("es-AR")}</div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted);max-width:280px;line-height:1.5">${warningNote}</div>
+      </div>`;
+  }
+
+  async function loadCosts() {
+    try {
+      const res = await fetch("data.json");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      buildCosts(data);
+    } catch (err) {
+      console.error("Could not load data.json:", err);
+      document.getElementById("costs-grid").innerHTML =
+        `<div style="grid-column:1/-1;text-align:center;color:#ef9a9a;padding:1rem">⚠️ No se pudo cargar data.json. Abrí el sitio desde un servidor local o GitHub Pages.</div>`;
+    }
+  }
+
+  loadCosts();
 </script>
 </body>
 </html>
